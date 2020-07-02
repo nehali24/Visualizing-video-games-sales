@@ -1,0 +1,488 @@
+---
+title: "video games"
+author: "nehali"
+date: "25/05/2020"
+output: html_document
+---
+```{r}
+library(dplyr)
+library(tidyverse)
+library(ggplot2)
+library(tidyr)
+```
+
+```{r}
+vgsales2019<- read.csv("data/sales-2019.csv")
+vgsales2016 <- read.csv("data/sales-2016-with-ratings.csv")
+```
+```{r}
+vgsales2016
+```
+
+```{r}
+vgsales2019
+```
+
+```{r}
+vgsales2016 %>%
+  mutate(User_Score = as.numeric(User_Score))
+vgsales2019 %>%
+  mutate(User_Score = as.numeric(User_Score))
+```
+
+
+```{r}
+summary(vgsales2016) 
+
+
+```
+
+```{r}
+dim(vgsales2016)
+head(vgsales2016)
+```
+
+
+
+```{r}
+dim(vgsales2019)
+head(vgsales2019)
+```
+
+
+```{r}
+summary(vgsales2019)
+```
+
+
+
+```{r}
+vgsales2019
+```
+
+
+```{r}
+vg <- inner_join(vgsales2016, vgsales2019, by = c("Name"))
+vg
+```
+
+```{r}
+vg <- vg %>%
+  mutate(
+name = as.factor(vg$Name),
+year = as.factor(vg$Year),
+
+)
+```
+```{r}
+vg1 <- vg %>%
+  mutate(total_sales = NA_Sales.x + NA_Sales.y+ EU_Sales + JP_Sales.x + JP_Sales.y + Other_Sales.x + Other_Sales.y + Global_Sales.x +Global_Sales.y) %>%
+mutate(total_NA_sales = NA_Sales.x + NA_Sales.y, total_JP_sales = JP_Sales.x + JP_Sales.y) 
+vg1
+```
+
+
+```{r}
+vg1 <- vg1 %>%
+  arrange(desc(total_sales))
+```
+
+```{r}
+dim(vg1)
+```
+
+
+```{r}
+summary(vg1)
+```
+```{r}
+str(vg1)
+```
+
+```{r}
+rank = vg1$Rank
+name = vg1$Name
+platform = vg1$Platform
+year = vg1$Year
+genre = vg1$Genre
+publisher = vg1$Publisher
+NAsales = vg1$NA_Sales
+EUsales = vg1$EU_Sales
+JPsales = vg1$JP_Sales
+otherSales = vg1$Other_Sales
+globalSales = vg1$Global_Sales
+Region = vg1$Region.where.most
+```
+
+
+```{r}
+names(vg1)
+```
+x: 2016
+y: 2019
+
+```{r}
+head(vg1, n = 10)
+```
+```{r}
+tail(vg1, n= 10)
+```
+
+
+
+VISUALIZING YEARLY PRODUCTION
+
+Yearly Production of video games
+
+```{r}
+library(ggthemes)
+```
+
+
+
+```{r}
+plot(vg1$year, xlab = "year", ylab = "total_sales" , main = "Yearly Distribution of Video Games" ,col="red")
+```
+
+```{r}
+vg1
+```
+
+
+Based on genre
+```{r}
+plot(vg1$Genre.x, xlab = "Genre", ylab = "total_sales", main="Genre Based Distribution-2016", col = "green")
+```
+
+```{r}
+plot(vg1$Genre.y, xlab = "Genre", ylab = "total_sales", main="Genre Based Distribution-2019", col = "green")
+```
+
+
+Based on platform
+
+2016
+```{r}
+  plot(vg1$Platform.x, xlab = "Platform", ylab = "No. of games", main="Platform
+       Based Distribution", col = "green")
+```
+2019
+```{r}
+plot(vg1$Platform.y, xlab = "Platform", ylab = "No. of games", main="Platform Based Distribution", col = "green")
+```
+
+```{r}
+
+library(ggplot2)
+```
+wrt Publisher-2016
+```{r}
+plot(vg1$Publisher.x, main = "Publisher based distribution 2016", xlab = "Publisher", ylab = "No. of games")
+```
+2019
+```{r}
+plot(vg1$Publisher.y, main = "Publisher based distribution 2019", xlab = "Publisher", ylab = "No. of games")
+```
+
+```{r}
+vg1
+```
+
+Sales of games in NA wrt platform
+```{r}
+plot(vg1$Platform.x ~ vg1$NA_Sales.x, main = "Platform based distribution", xlab="", ylab = "No. of games with respect to platforms", col="cyan")
+```
+
+
+
+
+```{r}
+vg1
+
+```
+
+
+```{r}
+yearly_revenue <- vg1 %>%
+filter(!is.na(total_sales)) %>%
+  group_by(year) %>%
+summarise(yearly_revenue = sum(total_sales))
+yearly_revenue
+```
+
+```{r}
+ggplot(yearly_revenue, aes(year, yearly_revenue)) +
+  geom_bar(fill = "purple", stat = "identity") +
+  ggtitle("Game Revenue by Year") +
+  scale_x_discrete(name = "year", breaks = c(1980, 1990, 2000, 2010, 2020))
+                       
+```
+```{r}
+vg1
+```
+SALES BASED DISTRIBUTION
+
+
+```{r}
+library(ggplot2)
+```
+```{r}
+vg1
+```
+
+
+
+```{r}
+plot(vg1$Platform.y ~ vg1$Global_Sales.y, main = "Sales based distribution", ylab = "Games wrt platform", col = "pink")
+```
+
+TOP 30 PUBLISHERS for 2016
+
+
+```{r}
+top30_2016 <- vg1 %>%
+  
+filter(!is.na(Publisher.x)) %>%
+  group_by(Publisher.x) %>%
+count()
+top30_2016
+
+```
+x: 2016
+```{r}
+top30_x <- top30_2016 %>%
+  arrange(desc(n))
+top30_x
+
+
+```
+
+```{r}
+library(broom)
+```
+
+
+
+
+```{r}
+plot(top30_x$Publisher.x, main = "Publisher based distribution 2016", xlab = "Publisher", ylab = "No. of games")
+```
+
+
+```{r}
+top_10 <- top30_x %>%
+  head(10)
+top_10
+```
+ top 10 publishers of 2019
+```{r}
+top10_2019 <- vg1 %>%
+  
+filter(!is.na(Publisher.y)) %>%
+  group_by(Publisher.y) %>%
+count()
+top10_2019
+```
+
+```{r}
+
+cro(top_10$Publisher.x, top_10$n)
+```
+
+
+
+
+
+
+2019
+```{r}
+top30_y <- vg1 %>%
+  
+filter(!is.na(Publisher.y)) %>%
+  group_by(Publisher.y) %>%
+count()
+top30_y
+  
+  
+```
+
+```{r}
+top30_y <- top30_y%>%
+  arrange(desc(n))
+top30_y
+```
+
+```{r}
+summary(top30_y)
+```
+
+vg1 = 2016 + 2019
+.x = 2016
+.y = 2019
+
+```{r}
+top30_y %>%
+  filter(!is.na(Publisher.y))
+```
+```{r}
+top30_x %>%
+  filter(!is.na(Publisher.x))
+```
+
+```{r}
+fj <- full_join(top30_x,top30_y) 
+fj
+```
+```{r}
+fj %>%
+  arrange(desc(n))
+```
+
+```{r}
+str(vg1)
+```
+```{r}
+fj
+```
+
+```{r}
+vg1
+```
+
+
+
+
+
+```{r}
+library(ggiraphExtra)
+library(GGally)
+```
+
+
+
+
+```{r}
+
+mod1.x <- lm(NA_Sales.x ~ Genre.x, data = vg1)
+mod1.x
+summary(mod1.x)
+```
+
+intercept : 0.319917: 
+p value < 0.05, hence there is no significant change in NA sales wrt genre.
+R square is quite low, that means only 15 % of variation is explained by  Genre.
+ 
+```{r}
+mod1.y <- lm(NA_Sales.y ~ Genre.y, data = vg1)
+mod1.y
+
+```
+```{r}
+library(broom)
+```
+
+```{r}
+tidy(mod1.x)
+tidy(mod1.y)
+```
+
+
+```{r}
+summary(mod1.y)
+```
+p value < 0.05, no significant change.
+R square is 0.02532, which again is quite low but more then data for 2016.
+
+```{r}
+vg1
+```
+
+
+```{r}
+mod2x<- lm(EUsales ~ Genre.x, data = vg1)
+mod2x
+```
+```{r}
+summary(mod2x)
+```
+p value < 0.05, reject .
+
+```{r}
+mod2y <- lm(EUsales ~ Genre.y, data = vg1)
+mod2y
+```
+
+```{r}
+summary(mod2y)
+```
+
+```{r}
+vg1
+```
+
+
+```{r}
+mod3.x <- lm(JP_Sales.x ~ Genre.x, data = vg1)
+mod3.x
+```
+```{r}
+summary(mod3.x)
+```
+
+```{r}
+mod3.y <- lm(JP_Sales.y ~ Genre.y, data = vg1)
+mod3.y
+```
+```{r}
+summary(mod3.y)
+```
+
+for 2016
+```{r}
+library(car)
+```
+
+```{r}
+scatterplotMatrix(formula = ~ NA_Sales.x + EU_Sales + JP_Sales.x , cex = 1, data=vg1, reg.line = ""  )
+```
+
+```{r}
+autoplot(mod1.x)
+autoplot(mod2x)
+autoplot(mod3.x)
+```
+For mod1x: NAsales.x ~ genre.x : we can see that the relationship is linear.
+Residuals are not noramlly distribute.
+mod2x: EUsales ~ genre.x
+mod3x: JPsales.x ~ genre.x
+
+mod1y:NAsales.y ~ genre.y
+mod2y:EU sales ~ genre.y
+mod3y: JPsales.y ~ genre.y
+
+  
+
+
+for 2019
+
+```{r}
+scatterplotMatrix(formula = ~ NA_Sales.y + EU_Sales + JP_Sales.y , cex=1, data=vg1, reg.line=""  )
+```
+
+```{r}
+library(ggfortify)
+autoplot(mod1.y)
+autoplot(mod2y)
+autoplot(mod3.y)
+```
+
+mod1.y : Residual vs fitted : line is exactly on 0, linear pattern 
+
+
+
+
+
+
+
+
+
